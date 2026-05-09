@@ -1,62 +1,91 @@
-// src/controllers/auth.controller.js
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const register = async (req, res) => {
+exports.register = async (req, res) => {
+  console.log("BODY RECEIVED:", req.body); // 👈 ADD THIS
+
   try {
-    const { name, email, phone, password, confirmPassword, agree } = req.body;
+    const { name, email, password } = req.body;
 
-    // 🔹 1. Required fields
-    if (!name || !email || !password || !confirmPassword) {
-      return res.status(400).json({ msg: "All required fields must be filled" });
-    }
+    const hashed = await bcrypt.hash(password, 10);
 
-    // 🔹 2. Password match
-    if (password !== confirmPassword) {
-      return res.status(400).json({ msg: "Passwords do not match" });
-    }
-
-    // 🔹 3. Password length
-    if (password.length < 8) {
-      return res.status(400).json({ msg: "Password must be at least 8 characters" });
-    }
-
-    // 🔹 4. Terms checkbox
-    if (!agree) {
-      return res.status(400).json({ msg: "You must accept terms and conditions" });
-    }
-
-    // 🔹 5. Check existing user
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ msg: "Email already registered" });
-    }
-
-    // 🔹 6. Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // 🔹 7. Create user
     const user = await User.create({
       name,
       email,
-      phone,
-      password: hashedPassword
+      password: hashed
     });
 
-    // 🔹 8. Response (no password)
-    res.status(201).json({
-      msg: "Account created successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone
-      }
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json(user);
+  } catch (err) {
+    console.log("ERROR:", err); // 👈 ADD THIS
+    res.status(500).json(err);
   }
 };
+exports.login = async (req, res) => {
+  console.log("🔥 LOGIN API CALLED");
 
-module.exports = { register };
+  try {
+    const { email, password } = req.body;
+
+    console.log("EMAIL:", email);
+    console.log("PASSWORD:", password);
+
+    const user = await User.findOne({ email });
+    console.log("USER:", user);
+
+    if (!user) {
+      console.log("❌ USER NOT FOUND");
+      return res.status(400).json({ msg: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("MATCH:", isMatch);
+
+    if (!isMatch) {
+      console.log("❌ WRONG PASSWORD");
+      return res.status(400).json({ msg: "Wrong password" });
+    }
+
+    console.log("✅ BEFORE TOKEN");
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET
+    );
+    console.log("TOKEN:", token);
+
+    console.log("✅ TOKEN CREATED");
+
+    return res.json({
+      message: "Login success",
+      token,
+      user
+    });
+
+  } catch (err) {
+    console.log("💥 ERROR:", err);
+    console.log("REAL ERROR 👉", err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+console.log("EXPORT TEST:", exports);
+exports.getMe = async (req, res) => {
+
+  try {
+
+    const user = await User.findById(
+      req.user.id
+    ).select("-password");
+
+    res.json(user);
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+      error: err.message
+    });
+  }
+};

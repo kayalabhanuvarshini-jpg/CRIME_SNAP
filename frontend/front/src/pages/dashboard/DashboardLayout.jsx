@@ -12,7 +12,7 @@ export default function DashboardLayout() {
   // LOGOUT FUNCTION
   const handleLogout = () => {
     localStorage.clear(); // optional
-    navigate("/login");
+    navigate("/");
   };
 
   return (

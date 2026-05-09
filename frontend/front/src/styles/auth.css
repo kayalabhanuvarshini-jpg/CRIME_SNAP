@@ -177,3 +177,17 @@ html, body {
   background: #e8f6ff;
   transform: scale(1.02);
 }
+.status-message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+}
+
+.status-message.error {
+  background: rgba(255, 0, 0, 0.3);
+  border: 1px solid #ff4d4d;
+}

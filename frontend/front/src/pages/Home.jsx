@@ -5,6 +5,7 @@ import bg from "../assets/home-bg.jpeg";
 import logo from "../assets/logo.png";
 
 export default function Home() {
+
   const quotes = [
     "Empowering citizens to improve their city.",
     "Your voice creates real change.",
@@ -17,16 +18,20 @@ export default function Home() {
   const [fade, setFade] = useState(true);
 
   useEffect(() => {
+
     const interval = setInterval(() => {
+
       setFade(false);
 
       setTimeout(() => {
         setIndex((prev) => (prev + 1) % quotes.length);
         setFade(true);
       }, 300);
+
     }, 5000);
 
     return () => clearInterval(interval);
+
   }, []);
 
   return (
@@ -47,16 +52,34 @@ export default function Home() {
           <span>CivicSnap</span>
         </div>
 
-        {/* LINKS */}
+        {/* NAV LINKS */}
         <nav className="nav-links">
-          <Link to="/">Home</Link>
-          <Link to="/login">🔐 Sign In</Link>
-          <Link to="/register">🤝 Join</Link>
+
+          <Link to="/">
+            Home
+          </Link>
+
+          <Link to="/login">
+            🔐 Sign In
+          </Link>
+
+          <Link to="/register">
+            🤝 Join
+          </Link>
+
+          {/* ADMIN BUTTON */}
+          <Link
+            to="/admin/login"
+            className="admin-btn"
+          >
+            🛠 Admin
+          </Link>
+
         </nav>
 
       </header>
 
-      {/* HERO */}
+      {/* HERO SECTION */}
       <section className="hero">
 
         <div className="hero-content">
@@ -67,13 +90,23 @@ export default function Home() {
             {quotes[index]}
           </p>
 
+          {/* HERO BUTTONS */}
           <div className="hero-buttons">
-            <Link to="/register" className="btn primary">
+
+            <Link
+              to="/register"
+              className="btn primary"
+            >
               🚀 Get Started
             </Link>
-            <Link to="/login" className="btn outline">
+
+            <Link
+              to="/login"
+              className="btn outline"
+            >
               🔐 Login
             </Link>
+
           </div>
 
         </div>

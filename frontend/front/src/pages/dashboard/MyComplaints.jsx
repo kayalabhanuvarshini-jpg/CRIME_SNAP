@@ -1,27 +1,53 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../../styles/mycomplaints.css";
 import bg from "../../assets/auth-bg.jpeg";
 
 export default function MyComplaints() {
   const navigate = useNavigate();
 
-  const complaints = [
-    { id: 1, title: "Theft in Street", category: "Crime", location: "Nellore", status: "Pending", description: "Mobile stolen at night near bus stop." },
-    { id: 2, title: "Road Damage", category: "Infrastructure", location: "Main Road", status: "In Progress", description: "Big potholes causing accidents." },
-    { id: 3, title: "Harassment Case", category: "Crime", location: "Bus Stand", status: "Resolved", description: "Issue resolved by police team." }
-  ];
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(
+          "http://localhost:3000/api/complaints/my",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        setComplaints(res.data);
+        setLoading(false);
+
+      } catch (err) {
+        console.log("FETCH ERROR:", err);
+        setLoading(false);
+      }
+    };
+
+    fetchComplaints();
+  }, []);
 
   const openDetails = (item) => {
     navigate("/complaint-details", { state: item });
   };
 
   return (
-    <div className="mycomplaints-container" style={{ backgroundImage: `url(${bg})` }}>
-
+    <div
+      className="mycomplaints-container"
+      style={{ backgroundImage: `url(${bg})` }}
+    >
       <div className="overlay"></div>
 
       <div className="mycomplaints-box">
-
         <h2>📄 My Complaints</h2>
 
         <div className="list-header">
@@ -31,10 +57,19 @@ export default function MyComplaints() {
           <span>Status</span>
         </div>
 
+        {/* LOADING STATE */}
+        {loading && <p style={{ color: "#fff" }}>Loading...</p>}
+
+        {/* EMPTY STATE */}
+        {!loading && complaints.length === 0 && (
+          <p style={{ color: "#fff" }}>No complaints found</p>
+        )}
+
+        {/* DATA */}
         {complaints.map((item) => (
           <div
             className="list-row clickable"
-            key={item.id}
+            key={item._id}
             onClick={() => openDetails(item)}
           >
             <span>{item.title}</span>
@@ -45,9 +80,7 @@ export default function MyComplaints() {
             </span>
           </div>
         ))}
-
       </div>
-
     </div>
   );
 }

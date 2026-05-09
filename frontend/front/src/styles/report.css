@@ -71,3 +71,12 @@
 
   border-radius: 8px;
 }
+.status-message {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+}

@@ -178,3 +178,12 @@
 .switch-text {
   margin-top: 15px;
 }
+.status-message {
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+}
