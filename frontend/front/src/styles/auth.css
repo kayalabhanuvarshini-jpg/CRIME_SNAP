@@ -11,7 +11,7 @@ html, body {
 }
 
 .auth-container {
-  width: 100vw;   /* FIX */
+  width: 100vw;
   height: 100vh;
   display: flex;
   position: relative;
@@ -88,10 +88,9 @@ html, body {
   width: 360px;
   padding: 28px;
   border-radius: 14px;
-  background: #ffffff;   /* PURE WHITE */
-  color: #000;           /* TEXT BLACK FOR READABILITY */
+  background: #ffffff;
+  color: #000;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-
 }
 
 /* TITLE */
@@ -100,20 +99,18 @@ html, body {
   margin-bottom: 20px;
 }
 
-
 /* INPUT */
 .input-group {
   position: relative;
   margin-bottom: 14px;
 }
 
-/* ICON FIX (IMPORTANT) */
 .input-icon {
   position: absolute;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(0,0,0,0.6); /* FIX visibility */
+  color: rgba(0,0,0,0.6);
   font-size: 14px;
 }
 
@@ -121,9 +118,15 @@ html, body {
   width: 100%;
   padding: 12px 12px 12px 40px;
   border-radius: 8px;
-  border: none;
+  border: 1.5px solid #e2e8f0;
   outline: none;
   font-size: 14px;
+  background: #f8fafc;
+}
+
+.input-group input:focus {
+  border-color: #00b4ff;
+  background: #fff;
 }
 
 /* BUTTON */
@@ -136,6 +139,18 @@ html, body {
   color: white;
   font-weight: 600;
   cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+  margin-top: 4px;
+}
+
+.auth-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.auth-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
 }
 
 /* LINK */
@@ -143,19 +158,115 @@ html, body {
   text-align: center;
   margin-top: 12px;
   font-size: 13px;
+  color: #475569;
 }
 
 .auth-link a {
   color: #00b4ff;
   text-decoration: none;
+  font-weight: 500;
+}
+
+/* ERROR MESSAGE */
+.auth-error-msg {
+  color: white;
+  background: #ff4d4d;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+/* ── ROLE TOGGLE ─────────────────────────────────────────── */
+.role-toggle {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.role-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.role-btn.active {
+  background: #ffffff;
+  color: #00b4ff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-weight: 600;
+}
+
+.role-icon {
+  font-size: 12px;
+}
+
+/* ── CHECKBOX (Register page) ────────────────────────────── */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #00b4ff;
+  cursor: pointer;
+}
+
+.checkbox-group a {
+  color: #00b4ff;
+  text-decoration: none;
+}
+
+/* PASSWORD MATCH HINT */
+.password-hint {
+  font-size: 12px;
+  margin-top: -8px;
+  margin-bottom: 8px;
+}
+
+.password-hint.match   { color: #16a34a; }
+.password-hint.no-match { color: #dc2626; }
+
+/* SUCCESS MESSAGE */
+.auth-success-msg {
+  color: white;
+  background: #16a34a;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  text-align: center;
 }
 
 /* MOBILE */
-@media (max-width:768px){
+@media (max-width: 768px) {
   .auth-left {
     display: none;
   }
 }
+
+/* DASHBOARD CARDS (kept from original) */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -176,18 +287,4 @@ html, body {
 .dash-card:hover {
   background: #e8f6ff;
   transform: scale(1.02);
-}
-.status-message {
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  font-size: 13px;
-  text-align: center;
-}
-
-.status-message.error {
-  background: rgba(255, 0, 0, 0.3);
-  border: 1px solid #ff4d4d;
 }

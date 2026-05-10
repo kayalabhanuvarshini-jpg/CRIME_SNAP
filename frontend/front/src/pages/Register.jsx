@@ -8,130 +8,104 @@ import bg from "../assets/auth-bg.jpeg";
 import logo from "../assets/logo.png";
 
 export default function Register() {
-
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [error, setError]     = useState("");
+  const [success, setSuccess] = useState("");
 
-  // INPUT
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
   };
 
-  // PASSWORD MATCH
   const passwordsMatch =
-    form.confirmPassword.length > 0 &&
-    form.password === form.confirmPassword;
+    form.confirmPassword.length > 0 && form.password === form.confirmPassword;
 
-  // SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Frontend validations
+    if (!form.name || !form.email || !form.password || !form.confirmPassword) {
+      return setError("All fields are required.");
+    }
+    if (form.password.length < 8) {
+      return setError("Password must be at least 8 characters.");
+    }
+    if (!passwordsMatch) {
+      return setError("Passwords do not match.");
+    }
+
+    setLoading(true);
 
     try {
+      const res = await axios.post("http://localhost:3000/api/auth/register", {
+        name:            form.name,
+        email:           form.email,
+        password:        form.password,
+        confirmPassword: form.confirmPassword,
+        agree:           true,
+        role:            "user",
+      });
 
-      setMessage("");
-      setLoading(true);
+      console.log("Register success:", res.data);
+      setSuccess("✅ Account created! Redirecting to login...");
+      setForm({ name: "", email: "", password: "", confirmPassword: "" });
 
-      if (!passwordsMatch) {
-        setMessage("❌ Passwords do not match");
-        setLoading(false);
-        return;
-      }
+      setTimeout(() => navigate("/login"), 2000);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/register",
-        {
-          name: form.name,
-          email: form.email,
-          password: form.password
-        }
+    } catch (err) {
+      console.error("Register error:", err.response?.data);
+      setError(
+        err.response?.data?.msg ||
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Registration failed. Please try again."
       );
-
-      console.log(res.data);
-
+    } finally {
       setLoading(false);
-      setMessage("✅ Registered successfully!");
-
-      // redirect after delay
-      setTimeout(() => {
-        navigate("/login");
-      }, 1200);
-
-    } catch (error) {
-
-      console.log(error);
-
-      setLoading(false);
-
-      setMessage(
-        error.response?.data?.message ||
-        "❌ Registration failed"
-      );
     }
   };
 
   return (
-
     <div className="auth-container">
+      <div className="auth-bg" style={{ backgroundImage: `url(${bg})` }}></div>
 
-      {/* BACKGROUND */}
-      <div
-        className="auth-bg"
-        style={{ backgroundImage: `url(${bg})` }}
-      ></div>
-
-      {/* LOGO */}
       <div className="page-logo">
         <img src={logo} alt="logo" />
       </div>
 
       {/* LEFT */}
       <div className="auth-left">
-
         <div className="quote-box">
-
           <h1>Join CivicSnap</h1>
-
           <h1>Be the change your city needs</h1>
-
-          <p>
-            <i>
-              "Create your account and help build better communities"
-            </i>
-          </p>
-
+          <p><i>"Create your account and help build better communities"</i></p>
         </div>
-
       </div>
 
       {/* RIGHT */}
       <div className="auth-right">
-
         <div className="auth-box">
-
           <h2>🤝 Become a Member</h2>
 
-          {/* MESSAGE BOX (NO ALERTS) */}
-          {message && (
-            <div className="status-message">
-              {message}
-            </div>
-          )}
+          {/* ERROR */}
+          {error && <p className="auth-error-msg">{error}</p>}
+
+          {/* SUCCESS */}
+          {success && <p className="auth-success-msg">{success}</p>}
 
           <form onSubmit={handleSubmit}>
 
-            {/* NAME */}
             <div className="input-group">
               <FaUser className="input-icon" />
               <input
@@ -144,33 +118,30 @@ export default function Register() {
               />
             </div>
 
-            {/* EMAIL */}
             <div className="input-group">
               <FaEnvelope className="input-icon" />
               <input
                 type="email"
                 name="email"
-                placeholder="Email"
+                placeholder="Email Address"
                 value={form.email}
                 onChange={handleChange}
                 required
               />
             </div>
 
-            {/* PASSWORD */}
             <div className="input-group">
               <FaLock className="input-icon" />
               <input
                 type="password"
                 name="password"
-                placeholder="Password"
+                placeholder="Password (Min. 8 chars)"
                 value={form.password}
                 onChange={handleChange}
                 required
               />
             </div>
 
-            {/* CONFIRM PASSWORD */}
             <div className="input-group">
               <FaLock className="input-icon" />
               <input
@@ -183,42 +154,27 @@ export default function Register() {
               />
             </div>
 
-            {/* MATCH MESSAGE */}
+            {/* PASSWORD MATCH HINT */}
             {form.confirmPassword.length > 0 && (
-              <p
-                style={{
-                  fontSize: "12px",
-                  marginBottom: "10px",
-                  color: passwordsMatch ? "lightgreen" : "#ff4d4d"
-                }}
-              >
-                {passwordsMatch
-                  ? "Passwords match ✔"
-                  : "Passwords do not match ❌"}
+              <p className={`password-hint ${passwordsMatch ? "match" : "no-match"}`}>
+                {passwordsMatch ? "Passwords match ✔" : "Passwords do not match ❌"}
               </p>
             )}
 
-            {/* BUTTON */}
             <button
               type="submit"
               className="auth-btn"
-              disabled={!passwordsMatch || loading}
+              disabled={!passwordsMatch || loading || form.password.length < 8}
             >
-              {loading ? "Creating account..." : "Register"}
+              {loading ? "Processing..." : "Register"}
             </button>
-
           </form>
 
-          {/* LOGIN LINK */}
           <div className="auth-link">
-            Already have an account?{" "}
-            <Link to="/login">Login</Link>
+            Already have an account? <Link to="/login">Login</Link>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }
