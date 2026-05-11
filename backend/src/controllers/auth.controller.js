@@ -1,91 +1,136 @@
 const User = require("../models/user.model");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+// ================= REGISTER =================
 exports.register = async (req, res) => {
-  console.log("BODY RECEIVED:", req.body); // 👈 ADD THIS
-
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
-    const hashed = await bcrypt.hash(password, 10);
+    console.log("REGISTER DATA:", req.body);
 
+    // check existing user
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    // create user WITHOUT HASHING
     const user = await User.create({
       name,
       email,
-      password: hashed
+      password,
+      role: role || "user",
     });
 
-    res.json(user);
+    res.status(201).json({
+      success: true,
+      message: "Registration successful",
+      user,
+    });
+
   } catch (err) {
-    console.log("ERROR:", err); // 👈 ADD THIS
-    res.status(500).json(err);
+    console.log("REGISTER ERROR:", err);
+
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 };
-exports.login = async (req, res) => {
-  console.log("🔥 LOGIN API CALLED");
 
+// ================= LOGIN =================
+exports.login = async (req, res) => {
   try {
+    console.log("🔥 LOGIN API CALLED");
+
     const { email, password } = req.body;
 
     console.log("EMAIL:", email);
     console.log("PASSWORD:", password);
 
+    // find user
     const user = await User.findOne({ email });
+
     console.log("USER:", user);
 
     if (!user) {
-      console.log("❌ USER NOT FOUND");
-      return res.status(400).json({ msg: "User not found" });
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    console.log("MATCH:", isMatch);
-
-    if (!isMatch) {
-      console.log("❌ WRONG PASSWORD");
-      return res.status(400).json({ msg: "Wrong password" });
+    // NORMAL PASSWORD CHECK
+    if (password !== user.password) {
+      return res.status(401).json({
+        success: false,
+        message: "Wrong password",
+      });
     }
 
-    console.log("✅ BEFORE TOKEN");
-
+    // create token
     const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET
+      {
+        id: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET || "secret123",
+      {
+        expiresIn: "7d",
+      }
     );
-    console.log("TOKEN:", token);
 
-    console.log("✅ TOKEN CREATED");
+    console.log("✅ LOGIN SUCCESS");
 
-    return res.json({
-      message: "Login success",
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
       token,
-      user
+      user,
     });
 
   } catch (err) {
-    console.log("💥 ERROR:", err);
-    console.log("REAL ERROR 👉", err);
-    return res.status(500).json({ error: err.message });
+    console.log("LOGIN ERROR:", err);
+
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 };
-console.log("EXPORT TEST:", exports);
-exports.getMe = async (req, res) => {
 
+// ================= GET ME =================
+exports.getMe = async (req, res) => {
   try {
 
     const user = await User.findById(
       req.user.id
     ).select("-password");
 
-    res.json(user);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
 
   } catch (err) {
-
-    console.log(err);
+    console.log("GET ME ERROR:", err);
 
     res.status(500).json({
-      error: err.message
+      success: false,
+      error: err.message,
     });
   }
 };
+
+console.log("✅ AUTH CONTROLLER LOADED");
